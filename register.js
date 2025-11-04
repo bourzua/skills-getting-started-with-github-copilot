@@ -1,33 +1,37 @@
-document.getElementById('registrationForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData.entries());
-    
-    try {
-        const response = await fetch('/api/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            // 새 등록자를 명단에 추가
-            addToList(data);
-            // 폼 초기화
-            this.reset();
-        }
-    } catch (error) {
-        console.error('등록 중 오류 발생:', error);
-    }
-});
-
-function addToList(data) {
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('registrationForm');
     const list = document.getElementById('registeredList');
-    const newItem = document.createElement('li');
-    newItem.textContent = `${data.name} - ${data.email}`;
-    list.appendChild(newItem);
-}
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault(); // 페이지 새로고침 방지
+
+        const formData = new FormData(form);
+        const data = {
+            name: formData.get('name'),
+            email: formData.get('email')
+        };
+
+        try {
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                // 새 항목을 목록에 추가
+                const li = document.createElement('li');
+                li.textContent = `${data.name} (${data.email})`;
+                list.appendChild(li);
+                
+                // 폼 초기화
+                form.reset();
+            }
+        } catch (error) {
+            console.error('등록 실패:', error);
+            alert('등록 중 오류가 발생했습니다.');
+        }
+    });
+});
